@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:16
+    container_name: shelter-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shelter
+      POSTGRES_PASSWORD: shelter
+      POSTGRES_DB: shelter
+    volumes:
+      - shelter-db-data:/var/lib/postgresql/data
+    networks:
+      - default
+
+  shelter-api:
+    build:
+      context: ./shelter-api
+    container_name: shelter-api
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8100:8000"
+    environment:
+      - DATABASE_URL=postgresql://shelter:shelter@db:5432/shelter
+    networks:
+      - default
+
+  shelter-agents:
+    build:
+      context: ./shelter-agents
+    container_name: shelter-agents
+    restart: "no"
+    depends_on:
+      - shelter-api
+    environment:
+      - API_URL=http://shelter-api:8000
+      - OLLAMA_URL=http://ollama:11434
+    networks:
+      - default
+      - ai-shared
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: shelter-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - shelter-api
+    networks:
+      - default
+
+networks:
+  ai-shared:
+    external: true
+
+volumes:
+  shelter-db-data:
