@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shelter Network Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -108,7 +109,6 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-
   .refresh-btn:hover { background: var(--subtle); color: var(--text); }
 
   .alerts-bar {
@@ -119,7 +119,6 @@
     flex-wrap: wrap;
     gap: 8px;
   }
-
   .alerts-bar.hidden { display: none; }
 
   .alert-pill {
@@ -132,10 +131,8 @@
     font-weight: 500;
     border: 1px solid;
   }
-
   .alert-pill.red { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
   .alert-pill.yellow { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow-border); }
-
   .alert-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .alert-pill.red .alert-dot { background: var(--red); }
   .alert-pill.yellow .alert-dot { background: var(--yellow); }
@@ -151,22 +148,103 @@
     margin-bottom: 12px;
   }
 
-  .metrics-grid {
+  .ai-insight {
+    background: var(--surface);
+    border: 1px solid var(--orange-border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .ai-insight.hidden { display: none; }
+
+  .ai-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .ai-icon svg { width: 16px; height: 16px; fill: white; }
+
+  .ai-body { flex: 1; }
+
+  .ai-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--orange-dark);
+    margin-bottom: 4px;
+  }
+
+  .ai-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .ai-time {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
     margin-bottom: 2rem;
   }
+
+  @media (max-width: 1000px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+  }
+
+  .chart-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+  }
+
+  .chart-wrap { position: relative; }
+
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 800px) { .metrics-row { grid-template-columns: repeat(3, 1fr); } }
 
   .metric-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1rem;
   }
 
-  .metric-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-  .metric-value { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .metric-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .metric-value { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.2; }
   .metric-value.orange { color: var(--orange); }
 
   .featured-section { margin-bottom: 2rem; }
@@ -197,7 +275,6 @@
   .featured-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
     background: var(--orange-light);
     color: var(--orange-dark);
     border: 1px solid var(--orange-border);
@@ -222,12 +299,7 @@
     flex-wrap: wrap;
   }
 
-  .featured-desc {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 10px;
-  }
+  .featured-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
 
   .featured-footer {
     display: flex;
@@ -247,7 +319,6 @@
     font-size: 11px;
     font-weight: 500;
   }
-
   .days-tag.warn { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow-border); }
   .days-tag.urgent { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
 
@@ -257,7 +328,6 @@
     gap: 1.5rem;
     margin-bottom: 2rem;
   }
-
   @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
 
   .panel {
@@ -285,19 +355,11 @@
     transition: background 0.1s;
     border-left: 3px solid transparent;
   }
-
   .shelter-item:hover { background: var(--subtle); }
   .shelter-item.active { background: var(--orange-light); border-left-color: var(--orange); }
 
   .shelter-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-
-  .shelter-meta {
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .shelter-meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
 
   .bar-wrap { flex: 1; height: 4px; background: var(--subtle); border-radius: 2px; overflow: hidden; }
   .bar-fill { height: 100%; background: var(--orange); border-radius: 2px; transition: width 0.4s ease; }
@@ -328,7 +390,6 @@
     color: var(--muted);
     transition: all 0.15s;
   }
-
   .filter-btn.active { background: var(--orange); border-color: var(--orange); color: white; }
 
   .animals-grid {
@@ -345,7 +406,6 @@
     padding: 12px;
     transition: border-color 0.15s;
   }
-
   .animal-card:hover { border-color: var(--orange-border); }
 
   .animal-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
@@ -392,7 +452,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
   }
-
   @media (max-width: 900px) { .timeline-grid { grid-template-columns: 1fr; } }
 
   .event-list { padding: 0; }
@@ -405,7 +464,6 @@
     border-bottom: 1px solid var(--border);
     font-size: 13px;
   }
-
   .event-item:last-child { border-bottom: none; }
 
   .event-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
@@ -426,7 +484,6 @@
     border-bottom: 1px solid var(--border);
     font-size: 13px;
   }
-
   .activity-row:last-child { border-bottom: none; }
 
   .activity-name { font-weight: 500; margin-bottom: 2px; }
@@ -461,15 +518,43 @@
 <div class="alerts-bar hidden" id="alerts-bar"></div>
 
 <main>
-  <div class="section-label">Overview</div>
-  <div class="metrics-grid" id="metrics-grid">
-    <div class="loading"><span class="spinning">↻</span> Loading...</div>
+
+  <div class="ai-insight hidden" id="ai-insight">
+    <div class="ai-icon">
+      <svg viewBox="0 0 16 16"><path d="M8 1a3 3 0 00-3 3c0 1.1.6 2.1 1.5 2.6C4.7 7.1 3 8.9 3 11h10c0-2.1-1.7-3.9-3.5-4.4A3 3 0 0011 4a3 3 0 00-3-3z"/></svg>
+    </div>
+    <div class="ai-body">
+      <div class="ai-label">Daily insight — generated by CyberClaw</div>
+      <div class="ai-text" id="ai-text"></div>
+      <div class="ai-time" id="ai-time"></div>
+    </div>
+  </div>
+
+  <div class="section-label">Network overview</div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Intake vs adoptions — last 30 days</div>
+      <div class="chart-wrap"><canvas id="trends-chart" height="180"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Species breakdown</div>
+      <div class="chart-wrap"><canvas id="species-chart" height="180"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Adoption rate by shelter</div>
+      <div class="chart-wrap"><canvas id="shelter-chart" height="180"></canvas></div>
+    </div>
+  </div>
+
+  <div class="metrics-row" id="metrics-row">
+    <div class="loading"><span class="spinning">↻</span></div>
   </div>
 
   <div class="featured-section">
     <div class="section-label">Newest arrivals</div>
     <div class="featured-grid" id="featured-grid">
-      <div class="loading"><span class="spinning">↻</span> Loading...</div>
+      <div class="loading"><span class="spinning">↻</span></div>
     </div>
   </div>
 
@@ -495,7 +580,7 @@
         </div>
       </div>
       <div class="animals-grid" id="animals-grid">
-        <div class="loading"><span class="spinning">↻</span> Loading...</div>
+        <div class="loading"><span class="spinning">↻</span></div>
       </div>
     </div>
   </div>
@@ -517,15 +602,21 @@
       </div>
     </div>
   </div>
+
 </main>
 
 <script>
 const API = 'https://shelter-api.cybergrind.org';
-let allAnimals = [];
-let allShelters = [];
-let allEvents = [];
-let activeShelter = null;
-let activeFilter = 'available';
+let allAnimals = [], allShelters = [], allEvents = [];
+let activeShelter = null, activeFilter = 'available';
+let trendsChart, speciesChart, shelterChart;
+
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+const tickColor = isDark ? '#9ca3af' : '#6b7280';
+
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
 
 async function fetchJSON(path) {
   const r = await fetch(API + path);
@@ -551,56 +642,143 @@ function daysBadge(days) {
   return `<span class="days-tag">${days} days here</span>`;
 }
 
-function renderAlerts(animals, shelters, metrics) {
+function renderAI(summary) {
+  const block = document.getElementById('ai-insight');
+  if (!summary || !summary.summary) return;
+  block.classList.remove('hidden');
+  document.getElementById('ai-text').textContent = summary.summary;
+  const d = new Date(summary.generated_at + 'Z');
+  document.getElementById('ai-time').textContent = 'Generated ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function renderAlerts(animals, metrics) {
   const bar = document.getElementById('alerts-bar');
   const alerts = [];
-
   if (metrics && metrics.capacity_utilization) {
     metrics.capacity_utilization.forEach(u => {
-      if (u.utilization >= 80) {
-        alerts.push({ type: 'red', text: `${u.shelter} is at ${Math.round(u.utilization)}% capacity` });
-      }
+      if (u.utilization >= 80) alerts.push({ type: 'red', text: `${u.shelter} is at ${Math.round(u.utilization)}% capacity` });
     });
   }
-
   const longStay = animals.filter(a => a.status === 'available' && daysInShelter(a.intake_date) >= 30);
-  if (longStay.length > 0) {
-    alerts.push({ type: 'yellow', text: `${longStay.length} animal${longStay.length > 1 ? 's have' : ' has'} been here 30+ days` });
-  }
-
+  if (longStay.length > 0) alerts.push({ type: 'yellow', text: `${longStay.length} animal${longStay.length > 1 ? 's have' : ' has'} been here 30+ days` });
   if (!alerts.length) { bar.classList.add('hidden'); return; }
   bar.classList.remove('hidden');
-  bar.innerHTML = alerts.map(a => `
-    <div class="alert-pill ${a.type}">
-      <div class="alert-dot"></div>
-      ${a.text}
-    </div>
-  `).join('');
+  bar.innerHTML = alerts.map(a => `<div class="alert-pill ${a.type}"><div class="alert-dot"></div>${a.text}</div>`).join('');
 }
 
 function renderMetrics(m) {
-  document.getElementById('metrics-grid').innerHTML = `
-    <div class="metric-card">
-      <div class="metric-label">Total animals</div>
-      <div class="metric-value">${m.total_animals}</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Available</div>
-      <div class="metric-value orange">${m.available}</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Adopted</div>
-      <div class="metric-value">${m.adopted}</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Adoption rate</div>
-      <div class="metric-value">${m.adoption_rate.toFixed(1)}<span style="font-size:16px;font-weight:400">%</span></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Pending</div>
-      <div class="metric-value">${m.pending}</div>
-    </div>
+  document.getElementById('metrics-row').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Total</div><div class="metric-value">${m.total_animals}</div></div>
+    <div class="metric-card"><div class="metric-label">Available</div><div class="metric-value orange">${m.available}</div></div>
+    <div class="metric-card"><div class="metric-label">Adopted</div><div class="metric-value">${m.adopted}</div></div>
+    <div class="metric-card"><div class="metric-label">Adoption rate</div><div class="metric-value">${m.adoption_rate.toFixed(1)}<span style="font-size:14px;font-weight:400">%</span></div></div>
+    <div class="metric-card"><div class="metric-label">Pending</div><div class="metric-value">${m.pending}</div></div>
   `;
+}
+
+function renderTrendsChart(trends) {
+  const allDates = new Set([
+    ...trends.intakes.map(d => d.date),
+    ...trends.adoptions.map(d => d.date)
+  ]);
+  const dates = Array.from(allDates).sort();
+  const intakeMap = Object.fromEntries(trends.intakes.map(d => [d.date, d.count]));
+  const adoptMap = Object.fromEntries(trends.adoptions.map(d => [d.date, d.count]));
+
+  const labels = dates.map(d => {
+    const dt = new Date(d);
+    return (dt.getMonth()+1) + '/' + dt.getDate();
+  });
+
+  if (trendsChart) trendsChart.destroy();
+  trendsChart = new Chart(document.getElementById('trends-chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Intakes',
+          data: dates.map(d => intakeMap[d] || 0),
+          backgroundColor: '#f97316',
+          borderRadius: 3,
+        },
+        {
+          label: 'Adoptions',
+          data: dates.map(d => adoptMap[d] || 0),
+          backgroundColor: '#16a34a',
+          borderRadius: 3,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: tickColor, boxWidth: 10, padding: 12 } } },
+      scales: {
+        x: { ticks: { color: tickColor, maxTicksLimit: 8 }, grid: { color: gridColor } },
+        y: { ticks: { color: tickColor, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function renderSpeciesChart(species) {
+  const dogs = (species.dog?.available || 0) + (species.dog?.adopted || 0) + (species.dog?.pending || 0);
+  const cats = (species.cat?.available || 0) + (species.cat?.adopted || 0) + (species.cat?.pending || 0);
+
+  if (speciesChart) speciesChart.destroy();
+  speciesChart = new Chart(document.getElementById('species-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Dogs', 'Cats'],
+      datasets: [{
+        data: [dogs, cats],
+        backgroundColor: ['#f97316', '#6366f1'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: tickColor, boxWidth: 10, padding: 12 } }
+      }
+    }
+  });
+}
+
+function renderShelterChart(byShelter) {
+  const sorted = [...byShelter].sort((a, b) => b.adoption_rate - a.adoption_rate);
+  const labels = sorted.map(s => s.shelter.replace(' Animal', '').replace(' Pet', '').replace(' Humane', ''));
+  const rates = sorted.map(s => s.adoption_rate);
+
+  if (shelterChart) shelterChart.destroy();
+  shelterChart = new Chart(document.getElementById('shelter-chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Adoption rate %',
+        data: rates,
+        backgroundColor: '#f97316',
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: tickColor, callback: v => v + '%' },
+          grid: { color: gridColor },
+          beginAtZero: true,
+          max: 100
+        },
+        y: { ticks: { color: tickColor } , grid: { color: gridColor } }
+      }
+    }
+  });
 }
 
 function renderFeatured(animals) {
@@ -616,7 +794,7 @@ function renderFeatured(animals) {
 
   document.getElementById('featured-grid').innerHTML = newest.map(a => {
     const days = daysInShelter(a.intake_date);
-    const shelterName = allShelters.find(s => s.id === a.shelter_id)?.name || 'Unknown shelter';
+    const shelterName = allShelters.find(s => s.id === a.shelter_id)?.name || '';
     return `
       <div class="featured-card">
         <div class="featured-badge">New arrival</div>
@@ -629,7 +807,7 @@ function renderFeatured(animals) {
           <span>&middot;</span>
           <span>${a.sex}</span>
         </div>
-        <div class="featured-desc">${a.description || 'No description available.'}</div>
+        <div class="featured-desc">${a.description || ''}</div>
         <div class="featured-footer">
           <span style="font-size:12px;color:var(--muted)">${shelterName}</span>
           ${daysBadge(days)}
@@ -639,15 +817,11 @@ function renderFeatured(animals) {
 }
 
 function renderShelters(shelters, metrics) {
-  const list = document.getElementById('shelter-list');
   document.getElementById('shelter-count').textContent = shelters.length + ' locations';
-
   const utilMap = {};
-  if (metrics && metrics.capacity_utilization) {
-    metrics.capacity_utilization.forEach(u => { utilMap[u.shelter] = u; });
-  }
+  if (metrics?.capacity_utilization) metrics.capacity_utilization.forEach(u => { utilMap[u.shelter] = u; });
 
-  list.innerHTML = shelters.map(s => {
+  document.getElementById('shelter-list').innerHTML = shelters.map(s => {
     const u = utilMap[s.name] || { current: s.current_count, capacity: s.capacity, utilization: 0 };
     const pct = Math.round(u.utilization);
     const critical = pct >= 80;
@@ -665,10 +839,7 @@ function renderShelters(shelters, metrics) {
 
 function renderAnimals(animals) {
   const grid = document.getElementById('animals-grid');
-  if (!animals.length) {
-    grid.innerHTML = '<div class="empty-state">No animals found</div>';
-    return;
-  }
+  if (!animals.length) { grid.innerHTML = '<div class="empty-state">No animals found</div>'; return; }
   grid.innerHTML = animals.map(a => {
     const days = daysInShelter(a.intake_date);
     return `
@@ -681,7 +852,7 @@ function renderAnimals(animals) {
           <span class="badge badge-${a.species}" style="margin-right:4px">${a.species}</span>
           ${a.breed} &middot; ${a.age_years}yr &middot; ${a.sex}
         </div>
-        <div class="animal-desc">${a.description || 'No description available.'}</div>
+        <div class="animal-desc">${a.description || ''}</div>
         <div class="animal-footer">
           <span>${a.health_status}</span>
           ${daysBadge(days)}
@@ -692,10 +863,7 @@ function renderAnimals(animals) {
 
 function renderEvents(events) {
   const list = document.getElementById('event-list');
-  if (!events.length) {
-    list.innerHTML = '<div class="empty-state">No recent activity</div>';
-    return;
-  }
+  if (!events.length) { list.innerHTML = '<div class="empty-state">No recent activity</div>'; return; }
   list.innerHTML = events.slice(0, 15).map(e => `
     <div class="event-item">
       <div class="event-dot dot-${e.event_type}"></div>
@@ -707,21 +875,14 @@ function renderEvents(events) {
 
 function renderShelterActivity(shelters, events) {
   const container = document.getElementById('shelter-activity');
-  if (!shelters.length) {
-    container.innerHTML = '<div class="empty-state">No data</div>';
-    return;
-  }
-
+  if (!shelters.length) { container.innerHTML = '<div class="empty-state">No data</div>'; return; }
   const activity = shelters.map(s => {
-    const shelterEvents = events.filter(e => e.shelter_id === s.id);
-    const adopted = shelterEvents.filter(e => e.event_type === 'adopted').length;
-    const intakes = shelterEvents.filter(e => e.event_type === 'intake').length;
-    const longStay = allAnimals.filter(a =>
-      a.shelter_id === s.id && a.status === 'available' && daysInShelter(a.intake_date) >= 30
-    ).length;
+    const se = events.filter(e => e.shelter_id === s.id);
+    const adopted = se.filter(e => e.event_type === 'adopted').length;
+    const intakes = se.filter(e => e.event_type === 'intake').length;
+    const longStay = allAnimals.filter(a => a.shelter_id === s.id && a.status === 'available' && daysInShelter(a.intake_date) >= 30).length;
     return { ...s, adopted, intakes, longStay };
   });
-
   container.innerHTML = activity.map(s => `
     <div class="activity-row">
       <div>
@@ -760,17 +921,25 @@ function applyFilter() {
 
 async function loadAll() {
   try {
-    const [metrics, shelters, animals, events] = await Promise.all([
+    const [metrics, shelters, animals, events, trends, species, byShelter, summary] = await Promise.all([
       fetchJSON('/metrics'),
       fetchJSON('/shelters'),
       fetchJSON('/animals'),
-      fetchJSON('/events')
+      fetchJSON('/events'),
+      fetchJSON('/metrics/trends'),
+      fetchJSON('/metrics/species'),
+      fetchJSON('/metrics/by-shelter'),
+      fetchJSON('/metrics/summary'),
     ]);
     allAnimals = animals;
     allShelters = shelters;
     allEvents = events;
-    renderAlerts(animals, shelters, metrics);
+    renderAI(summary);
+    renderAlerts(animals, metrics);
     renderMetrics(metrics);
+    renderTrendsChart(trends);
+    renderSpeciesChart(species);
+    renderShelterChart(byShelter);
     renderFeatured(animals);
     renderShelters(shelters, metrics);
     applyFilter();
@@ -779,7 +948,6 @@ async function loadAll() {
     document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch (e) {
     console.error(e);
-    document.getElementById('metrics-grid').innerHTML = '<div class="empty-state">Could not connect to API</div>';
   }
 }
 
