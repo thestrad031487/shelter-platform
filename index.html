@@ -20,10 +20,13 @@
     --subtle: #f3f4f6;
     --green: #16a34a;
     --green-bg: #f0fdf4;
+    --green-border: #bbf7d0;
     --yellow: #b45309;
     --yellow-bg: #fffbeb;
+    --yellow-border: #fde68a;
     --red: #dc2626;
     --red-bg: #fef2f2;
+    --red-border: #fecaca;
     --radius: 10px;
     --radius-sm: 6px;
   }
@@ -39,8 +42,11 @@
       --orange-light: #1c1008;
       --orange-border: #7c2d12;
       --green-bg: #052e16;
+      --green-border: #14532d;
       --yellow-bg: #1c1008;
+      --yellow-border: #78350f;
       --red-bg: #1f0707;
+      --red-border: #7f1d1d;
     }
   }
 
@@ -61,6 +67,9 @@
     align-items: center;
     justify-content: space-between;
     height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
   .logo {
@@ -86,16 +95,8 @@
 
   .logo-mark svg { width: 16px; height: 16px; fill: white; }
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  #last-updated {
-    font-size: 12px;
-    color: var(--muted);
-  }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  #last-updated { font-size: 12px; color: var(--muted); }
 
   .refresh-btn {
     background: none;
@@ -109,6 +110,35 @@
   }
 
   .refresh-btn:hover { background: var(--subtle); color: var(--text); }
+
+  .alerts-bar {
+    padding: 8px 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .alerts-bar.hidden { display: none; }
+
+  .alert-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+
+  .alert-pill.red { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+  .alert-pill.yellow { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow-border); }
+
+  .alert-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .alert-pill.red .alert-dot { background: var(--red); }
+  .alert-pill.yellow .alert-dot { background: var(--yellow); }
 
   main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
 
@@ -135,26 +165,91 @@
     padding: 1rem 1.25rem;
   }
 
-  .metric-label {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-
-  .metric-value {
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.2;
-  }
-
+  .metric-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .metric-value { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.2; }
   .metric-value.orange { color: var(--orange); }
 
-  .metric-sub {
+  .featured-section { margin-bottom: 2rem; }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .featured-card {
+    background: var(--surface);
+    border: 1px solid var(--orange-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .featured-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--orange);
+  }
+
+  .featured-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--orange-light);
+    color: var(--orange-dark);
+    border: 1px solid var(--orange-border);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .featured-name { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+
+  .featured-meta {
     font-size: 12px;
     color: var(--muted);
-    margin-top: 2px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
   }
+
+  .featured-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .featured-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .days-tag {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .days-tag.warn { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow-border); }
+  .days-tag.urgent { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
 
   .two-col {
     display: grid;
@@ -163,9 +258,7 @@
     margin-bottom: 2rem;
   }
 
-  @media (max-width: 900px) {
-    .two-col { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
 
   .panel {
     background: var(--surface);
@@ -194,17 +287,9 @@
   }
 
   .shelter-item:hover { background: var(--subtle); }
+  .shelter-item.active { background: var(--orange-light); border-left-color: var(--orange); }
 
-  .shelter-item.active {
-    background: var(--orange-light);
-    border-left-color: var(--orange);
-  }
-
-  .shelter-name {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
+  .shelter-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
 
   .shelter-meta {
     font-size: 12px;
@@ -214,20 +299,9 @@
     gap: 8px;
   }
 
-  .bar-wrap {
-    flex: 1;
-    height: 4px;
-    background: var(--subtle);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .bar-fill {
-    height: 100%;
-    background: var(--orange);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-  }
+  .bar-wrap { flex: 1; height: 4px; background: var(--subtle); border-radius: 2px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--orange); border-radius: 2px; transition: width 0.4s ease; }
+  .bar-fill.critical { background: var(--red); }
 
   .animals-panel { display: flex; flex-direction: column; }
 
@@ -242,12 +316,7 @@
   }
 
   .animals-title { font-weight: 500; font-size: 14px; }
-
-  .filter-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .filter-btn {
     background: var(--subtle);
@@ -260,11 +329,7 @@
     transition: all 0.15s;
   }
 
-  .filter-btn.active {
-    background: var(--orange);
-    border-color: var(--orange);
-    color: white;
-  }
+  .filter-btn.active { background: var(--orange); border-color: var(--orange); color: white; }
 
   .animals-grid {
     padding: 12px;
@@ -283,32 +348,11 @@
 
   .animal-card:hover { border-color: var(--orange-border); }
 
-  .animal-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 6px;
-  }
+  .animal-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .animal-name { font-size: 14px; font-weight: 600; }
+  .animal-breed { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 
-  .animal-name {
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .animal-breed {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-
-  .badge {
-    font-size: 11px;
-    padding: 2px 7px;
-    border-radius: 20px;
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-
+  .badge { font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
   .badge-available { background: var(--green-bg); color: var(--green); }
   .badge-pending { background: var(--yellow-bg); color: var(--yellow); }
   .badge-adopted { background: var(--subtle); color: var(--muted); }
@@ -337,9 +381,19 @@
     gap: 8px;
     font-size: 11px;
     color: var(--muted);
+    align-items: center;
+    justify-content: space-between;
   }
 
-  .events-section { margin-bottom: 2rem; }
+  .timeline-section { margin-bottom: 2rem; }
+
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 900px) { .timeline-grid { grid-template-columns: 1fr; } }
 
   .event-list { padding: 0; }
 
@@ -354,14 +408,7 @@
 
   .event-item:last-child { border-bottom: none; }
 
-  .event-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-top: 5px;
-    flex-shrink: 0;
-  }
-
+  .event-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
   .dot-adopted { background: var(--green); }
   .dot-intake { background: var(--orange); }
   .dot-status_change { background: var(--muted); }
@@ -369,25 +416,30 @@
   .event-text { flex: 1; color: var(--text); }
   .event-time { color: var(--muted); font-size: 12px; white-space: nowrap; }
 
-  .empty-state {
-    padding: 3rem;
-    text-align: center;
-    color: var(--muted);
-    font-size: 14px;
-  }
+  .shelter-activity { padding: 12px 16px; }
 
-  .loading {
-    padding: 2rem;
-    text-align: center;
-    color: var(--muted);
+  .activity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
     font-size: 13px;
   }
 
-  .spinning {
-    display: inline-block;
-    animation: spin 0.8s linear infinite;
-  }
+  .activity-row:last-child { border-bottom: none; }
 
+  .activity-name { font-weight: 500; margin-bottom: 2px; }
+  .activity-stats { font-size: 12px; color: var(--muted); }
+  .activity-badges { display: flex; gap: 6px; }
+
+  .mini-badge { font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+  .mini-adopted { background: var(--green-bg); color: var(--green); }
+  .mini-intake { background: var(--orange-light); color: var(--orange-dark); }
+
+  .empty-state { padding: 3rem; text-align: center; color: var(--muted); font-size: 14px; }
+  .loading { padding: 2rem; text-align: center; color: var(--muted); font-size: 13px; }
+  .spinning { display: inline-block; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -406,10 +458,19 @@
   </div>
 </header>
 
+<div class="alerts-bar hidden" id="alerts-bar"></div>
+
 <main>
   <div class="section-label">Overview</div>
   <div class="metrics-grid" id="metrics-grid">
     <div class="loading"><span class="spinning">↻</span> Loading...</div>
+  </div>
+
+  <div class="featured-section">
+    <div class="section-label">Newest arrivals</div>
+    <div class="featured-grid" id="featured-grid">
+      <div class="loading"><span class="spinning">↻</span> Loading...</div>
+    </div>
   </div>
 
   <div class="two-col">
@@ -439,11 +500,20 @@
     </div>
   </div>
 
-  <div class="events-section">
-    <div class="section-label">Recent activity</div>
-    <div class="panel">
-      <div class="event-list" id="event-list">
-        <div class="loading"><span class="spinning">↻</span> Loading...</div>
+  <div class="timeline-section">
+    <div class="section-label">Activity timeline</div>
+    <div class="timeline-grid">
+      <div class="panel">
+        <div class="panel-header">Recent events</div>
+        <div class="event-list" id="event-list">
+          <div class="loading"><span class="spinning">↻</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Shelter activity breakdown</div>
+        <div class="shelter-activity" id="shelter-activity">
+          <div class="loading"><span class="spinning">↻</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -452,6 +522,8 @@
 <script>
 const API = 'https://shelter-api.cybergrind.org';
 let allAnimals = [];
+let allShelters = [];
+let allEvents = [];
 let activeShelter = null;
 let activeFilter = 'available';
 
@@ -461,18 +533,53 @@ async function fetchJSON(path) {
   return r.json();
 }
 
+function daysInShelter(iso) {
+  return Math.floor((Date.now() - new Date(iso + (iso.endsWith('Z') ? '' : 'Z'))) / 86400000);
+}
+
 function timeAgo(iso) {
-  const d = new Date(iso + (iso.endsWith('Z') ? '' : 'Z'));
-  const diff = Math.floor((Date.now() - d) / 1000);
+  const diff = Math.floor((Date.now() - new Date(iso + (iso.endsWith('Z') ? '' : 'Z'))) / 1000);
   if (diff < 60) return 'just now';
   if (diff < 3600) return Math.floor(diff/60) + 'm ago';
   if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
   return Math.floor(diff/86400) + 'd ago';
 }
 
+function daysBadge(days) {
+  if (days >= 30) return `<span class="days-tag urgent">${days} days — needs home</span>`;
+  if (days >= 14) return `<span class="days-tag warn">${days} days here</span>`;
+  return `<span class="days-tag">${days} days here</span>`;
+}
+
+function renderAlerts(animals, shelters, metrics) {
+  const bar = document.getElementById('alerts-bar');
+  const alerts = [];
+
+  if (metrics && metrics.capacity_utilization) {
+    metrics.capacity_utilization.forEach(u => {
+      if (u.utilization >= 80) {
+        alerts.push({ type: 'red', text: `${u.shelter} is at ${Math.round(u.utilization)}% capacity` });
+      }
+    });
+  }
+
+  const longStay = animals.filter(a => a.status === 'available' && daysInShelter(a.intake_date) >= 30);
+  if (longStay.length > 0) {
+    alerts.push({ type: 'yellow', text: `${longStay.length} animal${longStay.length > 1 ? 's have' : ' has'} been here 30+ days` });
+  }
+
+  if (!alerts.length) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  bar.innerHTML = alerts.map(a => `
+    <div class="alert-pill ${a.type}">
+      <div class="alert-dot"></div>
+      ${a.text}
+    </div>
+  `).join('');
+}
+
 function renderMetrics(m) {
-  const grid = document.getElementById('metrics-grid');
-  grid.innerHTML = `
+  document.getElementById('metrics-grid').innerHTML = `
     <div class="metric-card">
       <div class="metric-label">Total animals</div>
       <div class="metric-value">${m.total_animals}</div>
@@ -496,6 +603,41 @@ function renderMetrics(m) {
   `;
 }
 
+function renderFeatured(animals) {
+  const newest = animals
+    .filter(a => a.status === 'available')
+    .sort((a, b) => new Date(b.intake_date) - new Date(a.intake_date))
+    .slice(0, 3);
+
+  if (!newest.length) {
+    document.getElementById('featured-grid').innerHTML = '<div class="empty-state">No available animals</div>';
+    return;
+  }
+
+  document.getElementById('featured-grid').innerHTML = newest.map(a => {
+    const days = daysInShelter(a.intake_date);
+    const shelterName = allShelters.find(s => s.id === a.shelter_id)?.name || 'Unknown shelter';
+    return `
+      <div class="featured-card">
+        <div class="featured-badge">New arrival</div>
+        <div class="featured-name">${a.name}</div>
+        <div class="featured-meta">
+          <span class="badge badge-${a.species}">${a.species}</span>
+          <span>${a.breed}</span>
+          <span>&middot;</span>
+          <span>${a.age_years}yr</span>
+          <span>&middot;</span>
+          <span>${a.sex}</span>
+        </div>
+        <div class="featured-desc">${a.description || 'No description available.'}</div>
+        <div class="featured-footer">
+          <span style="font-size:12px;color:var(--muted)">${shelterName}</span>
+          ${daysBadge(days)}
+        </div>
+      </div>`;
+  }).join('');
+}
+
 function renderShelters(shelters, metrics) {
   const list = document.getElementById('shelter-list');
   document.getElementById('shelter-count').textContent = shelters.length + ' locations';
@@ -508,13 +650,14 @@ function renderShelters(shelters, metrics) {
   list.innerHTML = shelters.map(s => {
     const u = utilMap[s.name] || { current: s.current_count, capacity: s.capacity, utilization: 0 };
     const pct = Math.round(u.utilization);
+    const critical = pct >= 80;
     return `
-      <div class="shelter-item ${activeShelter === s.id ? 'active' : ''}" onclick="selectShelter('${s.id}', '${s.name}')">
+      <div class="shelter-item ${activeShelter === s.id ? 'active' : ''}" onclick="selectShelter('${s.id}', '${s.name}', event)">
         <div class="shelter-name">${s.name}</div>
         <div class="shelter-meta">
           <span>${s.city}, ${s.state}</span>
-          <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
-          <span style="white-space:nowrap">${u.current}/${u.capacity}</span>
+          <div class="bar-wrap"><div class="bar-fill ${critical ? 'critical' : ''}" style="width:${pct}%"></div></div>
+          <span style="white-space:nowrap;${critical ? 'color:var(--red)' : ''}">${u.current}/${u.capacity}</span>
         </div>
       </div>`;
   }).join('');
@@ -527,7 +670,7 @@ function renderAnimals(animals) {
     return;
   }
   grid.innerHTML = animals.map(a => {
-    const intakeDays = Math.floor((Date.now() - new Date(a.intake_date + (a.intake_date.endsWith('Z') ? '' : 'Z'))) / 86400000);
+    const days = daysInShelter(a.intake_date);
     return `
       <div class="animal-card">
         <div class="animal-top">
@@ -541,8 +684,7 @@ function renderAnimals(animals) {
         <div class="animal-desc">${a.description || 'No description available.'}</div>
         <div class="animal-footer">
           <span>${a.health_status}</span>
-          <span>&middot;</span>
-          <span>${intakeDays}d in shelter</span>
+          ${daysBadge(days)}
         </div>
       </div>`;
   }).join('');
@@ -563,6 +705,37 @@ function renderEvents(events) {
   `).join('');
 }
 
+function renderShelterActivity(shelters, events) {
+  const container = document.getElementById('shelter-activity');
+  if (!shelters.length) {
+    container.innerHTML = '<div class="empty-state">No data</div>';
+    return;
+  }
+
+  const activity = shelters.map(s => {
+    const shelterEvents = events.filter(e => e.shelter_id === s.id);
+    const adopted = shelterEvents.filter(e => e.event_type === 'adopted').length;
+    const intakes = shelterEvents.filter(e => e.event_type === 'intake').length;
+    const longStay = allAnimals.filter(a =>
+      a.shelter_id === s.id && a.status === 'available' && daysInShelter(a.intake_date) >= 30
+    ).length;
+    return { ...s, adopted, intakes, longStay };
+  });
+
+  container.innerHTML = activity.map(s => `
+    <div class="activity-row">
+      <div>
+        <div class="activity-name">${s.name}</div>
+        <div class="activity-stats">${s.city}, ${s.state}${s.longStay > 0 ? ` &middot; <span style="color:var(--yellow)">${s.longStay} long-stay</span>` : ''}</div>
+      </div>
+      <div class="activity-badges">
+        ${s.intakes > 0 ? `<span class="mini-badge mini-intake">+${s.intakes} in</span>` : ''}
+        ${s.adopted > 0 ? `<span class="mini-badge mini-adopted">${s.adopted} adopted</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
 function setFilter(f, btn) {
   activeFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -570,12 +743,10 @@ function setFilter(f, btn) {
   applyFilter();
 }
 
-function selectShelter(id, name) {
+function selectShelter(id, name, e) {
   activeShelter = activeShelter === id ? null : id;
   document.querySelectorAll('.shelter-item').forEach(el => el.classList.remove('active'));
-  if (activeShelter) {
-    event.currentTarget.classList.add('active');
-  }
+  if (activeShelter) e.currentTarget.classList.add('active');
   document.getElementById('animals-title').textContent = activeShelter ? name : 'All animals';
   applyFilter();
 }
@@ -596,10 +767,15 @@ async function loadAll() {
       fetchJSON('/events')
     ]);
     allAnimals = animals;
+    allShelters = shelters;
+    allEvents = events;
+    renderAlerts(animals, shelters, metrics);
     renderMetrics(metrics);
+    renderFeatured(animals);
     renderShelters(shelters, metrics);
     applyFilter();
     renderEvents(events);
+    renderShelterActivity(shelters, events);
     document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch (e) {
     console.error(e);
