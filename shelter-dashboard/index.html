@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shelter Network Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #f97316;
+    --orange-light: #fff7ed;
+    --orange-border: #fed7aa;
+    --orange-dark: #c2410c;
+    --bg: #f9fafb;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.08);
+    --text: #111827;
+    --muted: #6b7280;
+    --subtle: #f3f4f6;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --yellow: #b45309;
+    --yellow-bg: #fffbeb;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: rgba(255,255,255,0.08);
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --subtle: #1f2230;
+      --orange-light: #1c1008;
+      --orange-border: #7c2d12;
+      --green-bg: #052e16;
+      --yellow-bg: #1c1008;
+      --red-bg: #1f0707;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--orange);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 16px; height: 16px; fill: white; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #last-updated {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .refresh-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 12px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .refresh-btn:hover { background: var(--subtle); color: var(--text); }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+
+  .metric-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .metric-value.orange { color: var(--orange); }
+
+  .metric-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .shelter-list { padding: 8px 0; }
+
+  .shelter-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-left: 3px solid transparent;
+  }
+
+  .shelter-item:hover { background: var(--subtle); }
+
+  .shelter-item.active {
+    background: var(--orange-light);
+    border-left-color: var(--orange);
+  }
+
+  .shelter-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .shelter-meta {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: var(--subtle);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .animals-panel { display: flex; flex-direction: column; }
+
+  .animals-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .animals-title { font-weight: 500; font-size: 14px; }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: var(--subtle);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: white;
+  }
+
+  .animals-grid {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .animal-card {
+    background: var(--subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    transition: border-color 0.15s;
+  }
+
+  .animal-card:hover { border-color: var(--orange-border); }
+
+  .animal-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .animal-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .animal-breed {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .badge-available { background: var(--green-bg); color: var(--green); }
+  .badge-pending { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-adopted { background: var(--subtle); color: var(--muted); }
+  .badge-dog { background: var(--orange-light); color: var(--orange-dark); }
+  .badge-cat { background: #f0f4ff; color: #3730a3; }
+
+  @media (prefers-color-scheme: dark) {
+    .badge-cat { background: #1e1b4b; color: #a5b4fc; }
+  }
+
+  .animal-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .animal-footer {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .events-section { margin-bottom: 2rem; }
+
+  .event-list { padding: 0; }
+
+  .event-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .event-item:last-child { border-bottom: none; }
+
+  .event-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .dot-adopted { background: var(--green); }
+  .dot-intake { background: var(--orange); }
+  .dot-status_change { background: var(--muted); }
+
+  .event-text { flex: 1; color: var(--text); }
+  .event-time { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+  .empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .loading {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .spinning {
+    display: inline-block;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16"><path d="M8 1a4 4 0 100 8A4 4 0 008 1zM3 12c0-1.5 2.2-2.5 5-2.5s5 1 5 2.5v1H3v-1z"/></svg>
+    </div>
+    Shelter Network
+  </a>
+  <div class="header-right">
+    <span id="last-updated"></span>
+    <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+  </div>
+</header>
+
+<main>
+  <div class="section-label">Overview</div>
+  <div class="metrics-grid" id="metrics-grid">
+    <div class="loading"><span class="spinning">↻</span> Loading...</div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-header">
+        <span>Shelters</span>
+        <span id="shelter-count" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div class="shelter-list" id="shelter-list">
+        <div class="loading"><span class="spinning">↻</span></div>
+      </div>
+    </div>
+
+    <div class="panel animals-panel">
+      <div class="animals-header">
+        <span class="animals-title" id="animals-title">All animals</span>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="setFilter('available', this)">Available</button>
+          <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+          <button class="filter-btn" onclick="setFilter('adopted', this)">Adopted</button>
+          <button class="filter-btn" onclick="setFilter('all', this)">All</button>
+        </div>
+      </div>
+      <div class="animals-grid" id="animals-grid">
+        <div class="loading"><span class="spinning">↻</span> Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="events-section">
+    <div class="section-label">Recent activity</div>
+    <div class="panel">
+      <div class="event-list" id="event-list">
+        <div class="loading"><span class="spinning">↻</span> Loading...</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const API = 'https://shelter-api.cybergrind.org';
+let allAnimals = [];
+let activeShelter = null;
+let activeFilter = 'available';
+
+async function fetchJSON(path) {
+  const r = await fetch(API + path);
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function timeAgo(iso) {
+  const d = new Date(iso + (iso.endsWith('Z') ? '' : 'Z'));
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+function renderMetrics(m) {
+  const grid = document.getElementById('metrics-grid');
+  grid.innerHTML = `
+    <div class="metric-card">
+      <div class="metric-label">Total animals</div>
+      <div class="metric-value">${m.total_animals}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Available</div>
+      <div class="metric-value orange">${m.available}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Adopted</div>
+      <div class="metric-value">${m.adopted}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Adoption rate</div>
+      <div class="metric-value">${m.adoption_rate.toFixed(1)}<span style="font-size:16px;font-weight:400">%</span></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Pending</div>
+      <div class="metric-value">${m.pending}</div>
+    </div>
+  `;
+}
+
+function renderShelters(shelters, metrics) {
+  const list = document.getElementById('shelter-list');
+  document.getElementById('shelter-count').textContent = shelters.length + ' locations';
+
+  const utilMap = {};
+  if (metrics && metrics.capacity_utilization) {
+    metrics.capacity_utilization.forEach(u => { utilMap[u.shelter] = u; });
+  }
+
+  list.innerHTML = shelters.map(s => {
+    const u = utilMap[s.name] || { current: s.current_count, capacity: s.capacity, utilization: 0 };
+    const pct = Math.round(u.utilization);
+    return `
+      <div class="shelter-item ${activeShelter === s.id ? 'active' : ''}" onclick="selectShelter('${s.id}', '${s.name}')">
+        <div class="shelter-name">${s.name}</div>
+        <div class="shelter-meta">
+          <span>${s.city}, ${s.state}</span>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <span style="white-space:nowrap">${u.current}/${u.capacity}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderAnimals(animals) {
+  const grid = document.getElementById('animals-grid');
+  if (!animals.length) {
+    grid.innerHTML = '<div class="empty-state">No animals found</div>';
+    return;
+  }
+  grid.innerHTML = animals.map(a => {
+    const intakeDays = Math.floor((Date.now() - new Date(a.intake_date + (a.intake_date.endsWith('Z') ? '' : 'Z'))) / 86400000);
+    return `
+      <div class="animal-card">
+        <div class="animal-top">
+          <div class="animal-name">${a.name}</div>
+          <span class="badge badge-${a.status}">${a.status}</span>
+        </div>
+        <div class="animal-breed">
+          <span class="badge badge-${a.species}" style="margin-right:4px">${a.species}</span>
+          ${a.breed} &middot; ${a.age_years}yr &middot; ${a.sex}
+        </div>
+        <div class="animal-desc">${a.description || 'No description available.'}</div>
+        <div class="animal-footer">
+          <span>${a.health_status}</span>
+          <span>&middot;</span>
+          <span>${intakeDays}d in shelter</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderEvents(events) {
+  const list = document.getElementById('event-list');
+  if (!events.length) {
+    list.innerHTML = '<div class="empty-state">No recent activity</div>';
+    return;
+  }
+  list.innerHTML = events.slice(0, 15).map(e => `
+    <div class="event-item">
+      <div class="event-dot dot-${e.event_type}"></div>
+      <div class="event-text">${e.notes || e.event_type}</div>
+      <div class="event-time">${timeAgo(e.timestamp)}</div>
+    </div>
+  `).join('');
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function selectShelter(id, name) {
+  activeShelter = activeShelter === id ? null : id;
+  document.querySelectorAll('.shelter-item').forEach(el => el.classList.remove('active'));
+  if (activeShelter) {
+    event.currentTarget.classList.add('active');
+  }
+  document.getElementById('animals-title').textContent = activeShelter ? name : 'All animals';
+  applyFilter();
+}
+
+function applyFilter() {
+  let filtered = allAnimals;
+  if (activeShelter) filtered = filtered.filter(a => a.shelter_id === activeShelter);
+  if (activeFilter !== 'all') filtered = filtered.filter(a => a.status === activeFilter);
+  renderAnimals(filtered);
+}
+
+async function loadAll() {
+  try {
+    const [metrics, shelters, animals, events] = await Promise.all([
+      fetchJSON('/metrics'),
+      fetchJSON('/shelters'),
+      fetchJSON('/animals'),
+      fetchJSON('/events')
+    ]);
+    allAnimals = animals;
+    renderMetrics(metrics);
+    renderShelters(shelters, metrics);
+    applyFilter();
+    renderEvents(events);
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('metrics-grid').innerHTML = '<div class="empty-state">Could not connect to API</div>';
+  }
+}
+
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>
