@@ -40,6 +40,21 @@ services:
       - default
       - ai-shared
 
+  shelter-scheduler:
+    build:
+      context: ./shelter-agents
+    container_name: shelter-scheduler
+    restart: unless-stopped
+    depends_on:
+      - shelter-api
+    command: python scheduler.py
+    environment:
+      - API_URL=http://shelter-api:8000
+      - OLLAMA_URL=http://ollama:11434
+    networks:
+      - default
+      - ai-shared
+
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: shelter-tunnel
