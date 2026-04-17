@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -133,3 +134,93 @@ def get_metrics(db: Session = Depends(get_db)):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+# --- Enhanced Metrics ---
+
+@app.get("/metrics/trends")
+def get_trends(db: Session = Depends(get_db)):
+    from sqlalchemy import cast, Date, func
+    thirty_days = datetime.utcnow() - timedelta(days=30)
+    intakes = db.query(
+        cast(Event.timestamp, Date).label("date"),
+        func.count(Event.id).label("count")
+    ).filter(
+        Event.event_type == "intake",
+        Event.timestamp >= thirty_days
+    ).group_by(cast(Event.timestamp, Date)).all()
+
+    adoptions = db.query(
+        cast(Event.timestamp, Date).label("date"),
+        func.count(Event.id).label("count")
+    ).filter(
+        Event.event_type == "adopted",
+        Event.timestamp >= thirty_days
+    ).group_by(cast(Event.timestamp, Date)).all()
+
+    return {
+        "intakes": [{"date": str(r.date), "count": r.count} for r in intakes],
+        "adoptions": [{"date": str(r.date), "count": r.count} for r in adoptions]
+    }
+
+@app.get("/metrics/species")
+def get_species(db: Session = Depends(get_db)):
+    results = db.query(
+        Animal.species,
+        Animal.status,
+        func.count(Animal.id).label("count")
+    ).group_by(Animal.species, Animal.status).all()
+
+    breakdown = {}
+    for r in results:
+        if r.species not in breakdown:
+            breakdown[r.species] = {}
+        breakdown[r.species][r.status] = r.count
+
+    return breakdown
+
+@app.get("/metrics/by-shelter")
+def get_by_shelter(db: Session = Depends(get_db)):
+    shelters = db.query(Shelter).all()
+    result = []
+    for s in shelters:
+        total = db.query(Animal).filter(Animal.shelter_id == s.id).count()
+        adopted = db.query(Animal).filter(
+            Animal.shelter_id == s.id,
+            Animal.status == "adopted"
+        ).count()
+        available = db.query(Animal).filter(
+            Animal.shelter_id == s.id,
+            Animal.status == "available"
+        ).count()
+        rate = round((adopted / total * 100), 1) if total > 0 else 0
+        result.append({
+            "shelter": s.name,
+            "city": s.city,
+            "state": s.state,
+            "total": total,
+            "adopted": adopted,
+            "available": available,
+            "adoption_rate": rate
+        })
+    return result
+
+@app.get("/metrics/summary")
+def get_summary(db: Session = Depends(get_db)):
+    import json, os
+    path = "/tmp/shelter_summary.json"
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    return {"summary": None, "generated_at": None}
+
+@app.post("/metrics/summary")
+def post_summary(data: dict, db: Session = Depends(get_db)):
+    import json
+    path = "/tmp/shelter_summary.json"
+    payload = {
+        "summary": data.get("summary"),
+        "generated_at": datetime.utcnow().isoformat()
+    }
+    with open(path, "w") as f:
+        json.dump(payload, f)
+    return payload
