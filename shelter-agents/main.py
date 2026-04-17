@@ -1,6 +1,7 @@
 import sys
 from agents.generator import seed_shelters, seed_animals
 from agents.updater import run_update
+from agents.narrator import run_narrator
 
 def run_generator():
     print("=== Shelter Generator Agent ===")
@@ -17,6 +18,8 @@ if __name__ == "__main__":
         run_generator()
     elif command == "update":
         run_update()
+    elif command == "narrate":
+        run_narrator()
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)
