@@ -30,7 +30,7 @@ services:
     build:
       context: ./shelter-agents
     container_name: shelter-agents
-    restart: unless-stopped
+    restart: "no"
     depends_on:
       - shelter-api
     environment:
