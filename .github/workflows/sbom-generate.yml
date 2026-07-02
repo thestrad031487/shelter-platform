@@ -1,0 +1,81 @@
+name: Generate SBOM
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  sbom:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM (CycloneDX JSON)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          upload-artifact: true
+          upload-artifact-retention: 30
+
+      - name: Generate SBOM (SPDX JSON)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom.spdx.json
+          upload-artifact: true
+          upload-artifact-retention: 30
+
+      - name: Scan SBOM for vulnerabilities (Grype)
+        uses: anchore/scan-action@v5
+        id: grype-scan
+        with:
+          sbom: sbom.cdx.json
+          fail-build: false
+          severity-cutoff: high
+          output-format: sarif
+
+      - name: Upload Grype results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ steps.grype-scan.outputs.sarif }}
+
+      - name: Commit SBOM to repo (main branch only)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p sbom
+          cp sbom.cdx.json sbom/sbom.cdx.json
+          cp sbom.spdx.json sbom/sbom.spdx.json
+          git add sbom/sbom.cdx.json sbom/sbom.spdx.json
+          git diff --staged --quiet || git commit -m "chore: update SBOM [skip ci]"
+          git push
+
+      # Requires a self-hosted GitHub Actions runner on your Tailscale network
+      # (or a Tailscale Funnel/Cloudflare Access-gated endpoint) since dtrack-apiserver
+      # is bound to localhost only. See README for the runner setup note.
+      - name: Upload SBOM to Dependency-Track
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          DTRACK_URL: ${{ secrets.DTRACK_URL }}
+          DTRACK_API_KEY: ${{ secrets.DTRACK_API_KEY }}
+        run: |
+          curl -sS -X POST "${DTRACK_URL}/api/v1/bom" \
+            -H "X-Api-Key: ${DTRACK_API_KEY}" \
+            -F "autoCreate=true" \
+            -F "projectName=${{ github.event.repository.name }}" \
+            -F "projectVersion=main" \
+            -F "bom=@sbom.cdx.json" \
+            --fail-with-body
